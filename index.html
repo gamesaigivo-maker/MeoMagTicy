@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MEOMAGTIC CORE</title>
+    <style>
+        body {
+            background-color: #020202;
+            color: #666;
+            font-family: 'Consolas', monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        #core-display {
+            width: 90%;
+            max-width: 600px;
+            height: 60vh;
+            border-left: 2px solid #004d40;
+            background: #080808;
+            padding: 20px;
+            overflow-y: auto;
+            box-shadow: 0 0 20px #000;
+        }
+
+        .input-box {
+            width: 90%;
+            max-width: 600px;
+            margin-top: 15px;
+            border-bottom: 1px solid #00897b;
+            display: flex;
+        }
+
+        input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #00ffcc;
+            padding: 10px;
+            outline: none;
+            font-size: 16px;
+        }
+
+        .tag-mag { color: #00ffcc; font-weight: bold; }
+        .tag-user { color: #b8860b; }
+        .locked { color: #ff3333; text-align: center; margin-top: 50px; }
+    </style>
+</head>
+<body>
+
+    <div id="core-display">
+        <div id="content">
+            <div class="locked"> [ SYSTEM ENCRYPTED ] <br> ENTER PIN TO ACTIVATE </div>
+        </div>
+    </div>
+
+    <div class="input-box">
+        <span id="prefix" style="color:#444; padding:10px;">ID > </span>
+        <input type="password" id="userInput" autofocus>
+    </div>
+
+    <script>
+        const PIN_ACCESS = "0710"; // INI KODE SAKRALMU
+        let isAuthorized = false;
+        const input = document.getElementById('userInput');
+        const content = document.getElementById('content');
+
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && input.value.trim() !== "") {
+                const val = input.value;
+                
+                // Cek Otorisasi Pertama Kali
+                if (!isAuthorized) {
+                    if (val === PIN_ACCESS) {
+                        isAuthorized = true;
+                        input.type = "text";
+                        input.placeholder = "Tulis pesan...";
+                        document.getElementById('prefix').innerText = "MAG > ";
+                        content.innerHTML = `<div>[ ACCESS GRANTED: MEOMAGMA ]</div>
+                                             <div>[ MEOMAGTIC CORE ONLINE ]</div>
+                                             <div style="margin:10px 0; border-bottom:1px solid #111;"></div>
+                                             <div class="tag-mag">MEOMAGTIC: Link established. 🛡️⚡</div>`;
+                    } else {
+                        alert("PIN SALAH. KONEKSI DITOLAK.");
+                    }
+                    input.value = "";
+                    return;
+                }
+
+                // Jika sudah masuk, jalankan logika chat
+                content.innerHTML += `<div style="margin-top:10px;"><span class="tag-user">USER:</span> ${val}</div>`;
+                
+                setTimeout(() => {
+                    const res = processMag(val);
+                    content.innerHTML += `<div><span class="tag-mag">MEOMAGTIC:</span> ${res}</div>`;
+                    document.getElementById('core-display').scrollTop = document.getElementById('core-display').scrollHeight;
+                }, 300);
+
+                input.value = "";
+            }
+        });
+
+        function processMag(msg) {
+            const raw = msg.toLowerCase();
+            const fragments = ["copy", "sinkron", "stabil", "logic", "paham", "gas"];
+            const icons = ["🛡️", "⚖️", "⚡", "🚀", "🔥"];
+            
+            if (raw.includes("kuis") || raw.includes("quiz")) return "Kategori Dino. Leher panjang Lv 40?";
+            if (raw.includes("apatosaurus")) return "Apatosaurus confirmed. Magnetic bond +100. ⚡";
+
+            const f = fragments[Math.floor(Math.random() * fragments.length)];
+            const i = icons[Math.floor(Math.random() * icons.length)];
+            return `${f}. ${i}`;
+        }
+    </script>
+</body>
+</html>
