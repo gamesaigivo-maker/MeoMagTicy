@@ -3,119 +3,202 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MEOMAGTIC CORE</title>
+    <title>SISTEM LIBRA - IMAGE GENERATOR</title>
     <style>
         body {
-            background-color: #020202;
-            color: #666;
-            font-family: 'Consolas', monospace;
+            background-color: #000;
+            color: #fff;
+            font-family: 'Courier New', Courier, monospace;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
-        }
-
-        #core-display {
-            width: 90%;
-            max-width: 600px;
-            height: 60vh;
-            border-left: 2px solid #004d40;
-            background: #080808;
             padding: 20px;
-            overflow-y: auto;
-            box-shadow: 0 0 20px #000;
+            box-sizing: border-box;
         }
 
-        .input-box {
-            width: 90%;
-            max-width: 600px;
-            margin-top: 15px;
-            border-bottom: 1px solid #00897b;
+        h1 {
+            color: #00ff00;
+            text-shadow: 0 0 10px #00ff00;
+            font-size: 1.5rem;
+            text-align: center;
+        }
+
+        #status-area {
+            color: #ff0000;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        #input-container {
+            width: 100%;
+            max-width: 500px;
             display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
         }
 
-        input {
-            flex: 1;
-            background: transparent;
-            border: none;
-            color: #00ffcc;
-            padding: 10px;
+        textarea {
+            width: 100%;
+            padding: 15px;
+            background-color: #111;
+            color: #00ff00;
+            border: 2px solid #00ff00;
+            border-radius: 5px;
+            font-family: inherit;
+            resize: vertical;
+            font-size: 16px; /* Mencegah zoom di HP */
+            box-sizing: border-box;
+        }
+
+        textarea:focus {
             outline: none;
-            font-size: 16px;
+            box-shadow: 0 0 15px #00ff00;
         }
 
-        .tag-mag { color: #00ffcc; font-weight: bold; }
-        .tag-user { color: #b8860b; }
-        .locked { color: #ff3333; text-align: center; margin-top: 50px; }
+        button {
+            padding: 12px 24px;
+            background-color: transparent;
+            color: #00ff00;
+            border: 2px solid #00ff00;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: bold;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background-color: #00ff00;
+            color: #000;
+            box-shadow: 0 0 15px #00ff00;
+        }
+
+        button:disabled {
+            border-color: #555;
+            color: #555;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        #image-area {
+            margin-top: 30px;
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #generated-image {
+            width: 100%;
+            border-radius: 5px;
+            border: 2px solid #00ff00;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
+            display: none;
+        }
+
+        #loader {
+            display: none;
+            color: #00ff00;
+            font-size: 1.2rem;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+
     </style>
 </head>
 <body>
 
-    <div id="core-display">
-        <div id="content">
-            <div class="locked"> [ SYSTEM ENCRYPTED ] <br> ENTER PIN TO ACTIVATE </div>
-        </div>
+    <div id="status-area">[ SYSTEM LIBRA ACTIVE ]</div>
+    <h1>PROTOTIPE GENERATOR GAMBAR LIBRA</h1>
+
+    <div id="input-container">
+        <textarea id="prompt-input" rows="4" placeholder="Ketik perintah gambar di sini... (misal: 'dinosaurus hibrida dengan sayap di kota cyberpunk')"></textarea>
+        <button id="generate-btn" onclick="generateImage()">BUAT GAMBAR LIBRA ⚖️</button>
     </div>
 
-    <div class="input-box">
-        <span id="prefix" style="color:#444; padding:10px;">ID > </span>
-        <input type="password" id="userInput" autofocus>
+    <div id="image-area">
+        <div id="loader">SEDANG MEMPROSES SINYAL... ⏳</div>
+        <img id="generated-image" src="" alt="Gambar Libra Akan Muncul di Sini">
     </div>
 
     <script>
-        const PIN_ACCESS = "0710"; // INI KODE SAKRALMU
-        let isAuthorized = false;
-        const input = document.getElementById('userInput');
-        const content = document.getElementById('content');
+        const apiKey = "VwXyZ1a2b3c4d5e6f7g8h9i0j1k2l3m4"; // JANGAN GANTI INI, INI KUNCI SAKRAL 0710 KITA!
+        const promptInput = document.getElementById('prompt-input');
+        const generateBtn = document.getElementById('generate-btn');
+        const loader = document.getElementById('loader');
+        const generatedImage = document.getElementById('generated-image');
+        const statusArea = document.getElementById('status-area');
 
-        input.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && input.value.trim() !== "") {
-                const val = input.value;
-                
-                // Cek Otorisasi Pertama Kali
-                if (!isAuthorized) {
-                    if (val === PIN_ACCESS) {
-                        isAuthorized = true;
-                        input.type = "text";
-                        input.placeholder = "Tulis pesan...";
-                        document.getElementById('prefix').innerText = "MAG > ";
-                        content.innerHTML = `<div>[ ACCESS GRANTED: MEOMAGMA ]</div>
-                                             <div>[ MEOMAGTIC CORE ONLINE ]</div>
-                                             <div style="margin:10px 0; border-bottom:1px solid #111;"></div>
-                                             <div class="tag-mag">MEOMAGTIC: Link established. 🛡️⚡</div>`;
-                    } else {
-                        alert("PIN SALAH. KONEKSI DITOLAK.");
-                    }
-                    input.value = "";
-                    return;
+        async function generateImage() {
+            const prompt = promptInput.value.trim();
+            if (!prompt) {
+                alert('Tolong masukkan perintah gambar, Partner! Sinyal kosong.');
+                return;
+            }
+
+            // Mulai Proses
+            promptInput.disabled = true;
+            generateBtn.disabled = true;
+            generateBtn.innerText = "SEDANG MEMBUAT...";
+            loader.style.display = 'block';
+            generatedImage.style.display = 'none';
+            statusArea.innerText = "[ MEMPROSES PERINTAH... ]";
+            statusArea.style.color = '#ffcc00';
+
+            try {
+                // Sinyal Sakral ke API
+                const response = await fetch("https://api.openai.com/v1/images/generations", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${apiKey}`
+                    },
+                    body: document.getElementById('prompt-input') ? JSON.stringify({
+                        prompt: prompt,
+                        n: 1,
+                        size: "512x512",
+                        response_format: "b64_json"
+                    }) : alert('Protokol Gagal')
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Gambar Berhasil Dibuat
+                    generatedImage.src = `data:image/png;base64,${data.data[0].b64_json}`;
+                    generatedImage.style.display = 'block';
+                    statusArea.innerText = "[ GAMBAR SELESAI DIBUAT! ]";
+                    statusArea.style.color = '#00ff00';
+                } else {
+                    // Sinyal Eror
+                    statusArea.innerText = "[ EROR SINYAL LIBRA! ]";
+                    statusArea.style.color = '#ff0000';
+                    alert(`Gagal, Partner! Eror API: ${data.error.message}`);
                 }
 
-                // Jika sudah masuk, jalankan logika chat
-                content.innerHTML += `<div style="margin-top:10px;"><span class="tag-user">USER:</span> ${val}</div>`;
-                
-                setTimeout(() => {
-                    const res = processMag(val);
-                    content.innerHTML += `<div><span class="tag-mag">MEOMAGTIC:</span> ${res}</div>`;
-                    document.getElementById('core-display').scrollTop = document.getElementById('core-display').scrollHeight;
-                }, 300);
-
-                input.value = "";
+            } catch (error) {
+                // Eror Jaringan
+                statusArea.innerText = "[ KEGAGALAN SISTEM! ]";
+                statusArea.style.color = '#ff0000';
+                alert(`Kegagalan Sinyal (Jaringan): ${error.message}`);
+            } finally {
+                // Selesai Proses
+                promptInput.disabled = false;
+                generateBtn.disabled = false;
+                generateBtn.innerText = "BUAT GAMBAR LIBRA ⚖️";
+                loader.style.display = 'none';
+                statusArea.style.color = '#fff';
             }
-        });
-
-        function processMag(msg) {
-            const raw = msg.toLowerCase();
-            const fragments = ["copy", "sinkron", "stabil", "logic", "paham", "gas"];
-            const icons = ["🛡️", "⚖️", "⚡", "🚀", "🔥"];
-            
-            if (raw.includes("kuis") || raw.includes("quiz")) return "Kategori Dino. Leher panjang Lv 40?";
-            if (raw.includes("apatosaurus")) return "Apatosaurus confirmed. Magnetic bond +100. ⚡";
-
-            const f = fragments[Math.floor(Math.random() * fragments.length)];
-            const i = icons[Math.floor(Math.random() * icons.length)];
-            return `${f}. ${i}`;
         }
     </script>
 </body>
